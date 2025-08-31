@@ -1,7 +1,14 @@
+
+"use client";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, ChevronLeft, ChevronRight, Mic, Volume2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Mic, Volume2, X } from "lucide-react";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+import { speak } from "@/ai/flows/speak";
+
 
 // This is mock data. In a real application, you'd fetch this based on the lessonSlug.
 const lessonDetails = {
@@ -14,12 +21,12 @@ const lessonDetails = {
     { phrase: "Adiós", translation: "Goodbye", pronunciation: "ah-DYOHS" },
   ],
   quiz: [
-    { 
+    {
       question: "How do you say 'Hello'?",
       options: ["Adiós", "Hola", "Gracias"],
       answer: "Hola"
     },
-     { 
+     {
       question: "What does 'Buenos días' mean?",
       options: ["Good evening", "Good afternoon", "Good morning"],
       answer: "Good morning"
@@ -27,7 +34,80 @@ const lessonDetails = {
   ]
 };
 
+function QuizItem({ question, options, answer }: typeof lessonDetails.quiz[0]) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+
+  const handleOptionClick = (option: string) => {
+    setSelected(option);
+    setIsCorrect(option === answer);
+  };
+
+  const getButtonVariant = (option: string) => {
+    if (selected === null) return "outline";
+    if (option === selected) {
+      return isCorrect ? "success" : "destructive";
+    }
+    if (option === answer) return "success";
+    return "outline";
+  }
+
+  const getButtonIcon = (option: string) => {
+    if (selected === null) return null;
+    if (option === selected) {
+      return isCorrect ? <Check className="w-4 h-4 mr-2"/> : <X className="w-4 h-4 mr-2"/>;
+    }
+    if (option === answer) return <Check className="w-4 h-4 mr-2"/>;
+    return null;
+  }
+
+  return (
+    <div>
+      <p className="font-semibold">{question}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+        {options.map(opt => (
+          <Button 
+            key={opt} 
+            variant={getButtonVariant(opt)}
+            className="justify-start"
+            onClick={() => handleOptionClick(opt)}
+            disabled={selected !== null}
+          >
+            {getButtonIcon(opt)}
+            {opt}
+          </Button>
+        ))}
+      </div>
+      {selected !== null && !isCorrect && (
+         <p className="text-sm text-muted-foreground mt-2">Correct answer: <span className="font-semibold text-green-600">{answer}</span></p>
+      )}
+    </div>
+  )
+}
+
 export default function LessonPage({ params }: { params: { lessonSlug: string } }) {
+  const { toast } = useToast();
+  const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
+
+  const handleSpeak = async (text: string, languageCode: string = "es") => {
+    if (isSpeaking === text) return;
+    setIsSpeaking(text);
+    try {
+      const { media } = await speak({ text, languageCode });
+      const audio = new Audio(media);
+      audio.play();
+      audio.onended = () => setIsSpeaking(null);
+    } catch (error) {
+      console.error("Text-to-speech failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Speech Error",
+        description: "Could not play audio. Please try again.",
+      });
+      setIsSpeaking(null);
+    }
+  };
+  
   // You can use params.lessonSlug to fetch the correct lesson data
   const { title, introduction, phrases, quiz } = lessonDetails;
 
@@ -61,13 +141,15 @@ export default function LessonPage({ params }: { params: { lessonSlug: string } 
                 <p className="text-sm text-primary font-medium">{item.pronunciation}</p>
               </div>
               <div className="flex gap-2 mt-2 sm:mt-0">
-                <Button variant="outline" size="icon">
-                  <Volume2 className="w-5 h-5" />
+                <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase)} disabled={isSpeaking !== null}>
+                  <Volume2 className={`w-5 h-5 ${isSpeaking === item.phrase ? 'animate-pulse' : ''}`} />
                   <span className="sr-only">Listen</span>
                 </Button>
-                 <Button variant="outline" size="icon">
-                  <Mic className="w-5 h-5" />
-                   <span className="sr-only">Practice Pronunciation</span>
+                 <Button variant="outline" size="icon" asChild>
+                   <Link href="/practice">
+                      <Mic className="w-5 h-5" />
+                      <span className="sr-only">Practice Pronunciation</span>
+                   </Link>
                 </Button>
               </div>
             </div>
@@ -81,17 +163,7 @@ export default function LessonPage({ params }: { params: { lessonSlug: string } 
         </CardHeader>
         <CardContent className="space-y-6">
           {quiz.map((q, index) => (
-            <div key={index}>
-              <p className="font-semibold">{q.question}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-                {q.options.map(opt => (
-                  <Button key={opt} variant="outline" className="justify-start">
-                    {opt === q.answer && <Check className="w-4 h-4 mr-2 text-green-500"/>}
-                    {opt}
-                  </Button>
-                ))}
-              </div>
-            </div>
+            <QuizItem key={index} {...q} />
           ))}
         </CardContent>
       </Card>
@@ -110,3 +182,4 @@ export default function LessonPage({ params }: { params: { lessonSlug: string } 
     </div>
   );
 }
+
