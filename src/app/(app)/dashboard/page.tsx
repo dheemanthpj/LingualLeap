@@ -8,11 +8,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
   ChartConfig,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis
 } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis } from "recharts";
 
 const chartData = [
   { day: 'Mon', xp: 50 },
