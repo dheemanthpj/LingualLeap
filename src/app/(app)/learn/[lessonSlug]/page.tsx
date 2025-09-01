@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, ChevronLeft, ChevronRight, Mic, Volume2, X } from "lucide-react";
@@ -11,15 +11,20 @@ import { speak } from "@/ai/flows/speak";
 import { allLessons } from "@/lib/lessons-data";
 import { useParams } from "next/navigation";
 import { useSettings } from "@/hooks/use-settings";
+import { useLessonProgress } from "@/hooks/use-lesson-progress";
 
 
-function QuizItem({ question, options, answer }: typeof allLessons[0]['quiz'][0]) {
+function QuizItem({ question, options, answer, onCorrect }: (typeof allLessons[0]['quiz'][0] & { onCorrect: () => void })) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
   const handleOptionClick = (option: string) => {
     setSelected(option);
-    setIsCorrect(option === answer);
+    const correct = option === answer;
+    setIsCorrect(correct);
+    if (correct) {
+        onCorrect();
+    }
   };
 
   const getButtonVariant = (option: string) => {
@@ -68,8 +73,26 @@ export default function LessonPage() {
   const params = useParams() as { lessonSlug: string };
   const { toast } = useToast();
   const { learningLanguage } = useSettings();
+  const { completeLesson } = useLessonProgress();
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
 
+  const lessonDetails = allLessons.find(l => l.slug === params.lessonSlug);
+
+  useEffect(() => {
+    if (lessonDetails && correctAnswers === lessonDetails.quiz.length) {
+        completeLesson(params.lessonSlug);
+        toast({
+            title: "Lesson Complete!",
+            description: `You've mastered "${lessonDetails.title}".`,
+        });
+    }
+  }, [correctAnswers, lessonDetails, params.lessonSlug, completeLesson, toast]);
+  
+  const handleCorrectAnswer = () => {
+    setCorrectAnswers(prev => prev + 1);
+  };
+  
   const handleSpeak = async (text: string) => {
     if (isSpeaking === text) return;
     setIsSpeaking(text);
@@ -89,7 +112,6 @@ export default function LessonPage() {
     }
   };
   
-  const lessonDetails = allLessons.find(l => l.slug === params.lessonSlug);
   const currentLessonIndex = allLessons.findIndex(l => l.slug === params.lessonSlug);
   
   const previousLesson = currentLessonIndex > 0 ? allLessons[currentLessonIndex - 1] : null;
@@ -158,7 +180,7 @@ export default function LessonPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             {quiz.map((q, index) => (
-              <QuizItem key={index} {...q} />
+              <QuizItem key={index} {...q} onCorrect={handleCorrectAnswer} />
             ))}
           </CardContent>
         </Card>

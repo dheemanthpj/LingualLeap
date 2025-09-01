@@ -3,12 +3,10 @@ export const learningPaths = [
   {
     title: "Beginner: The Essentials",
     description: "Start your journey by mastering the basics of the language.",
-    progress: 35,
     lessons: [
       { 
         slug: "common-greetings", 
         title: "Common Greetings", 
-        completed: true,
         introduction: "Let's learn some essential greetings you can use in everyday conversations. These are fundamental for starting any interaction.",
         phrases: [
           { phrase: "Hola", translation: "Hello", pronunciation: "OH-lah" },
@@ -32,7 +30,6 @@ export const learningPaths = [
       { 
         slug: "introducing-yourself", 
         title: "Introducing Yourself", 
-        completed: true,
         introduction: "Learn how to introduce yourself and share basic personal information.",
         phrases: [
           { phrase: "Me llamo...", translation: "My name is...", pronunciation: "meh YAH-moh" },
@@ -50,7 +47,6 @@ export const learningPaths = [
       { 
         slug: "basic-questions-answers", 
         title: "Basic Questions & Answers", 
-        completed: false,
         introduction: "Ask and answer common questions to handle simple conversations.",
         phrases: [
           { phrase: "¿Qué hora es?", translation: "What time is it?", pronunciation: "keh O-ra es" },
@@ -66,7 +62,6 @@ export const learningPaths = [
       { 
         slug: "numbers-and-counting", 
         title: "Numbers and Counting", 
-        completed: false,
         introduction: "Learn numbers to count and talk about age or prices.",
         phrases: [
           { phrase: "Uno, dos, tres", translation: "One, two, three", pronunciation: "OO-no, dohs, tres" },
@@ -83,12 +78,10 @@ export const learningPaths = [
   {
     title: "Intermediate: Building Confidence",
     description: "Expand your vocabulary and start forming complex sentences.",
-    progress: 0,
     lessons: [
       { 
         slug: "ordering-food-and-drinks", 
         title: "Ordering Food and Drinks", 
-        completed: false, 
         introduction: "Learn how to order food and drinks confidently in a restaurant.",
         phrases: [
           { phrase: "Quisiera un café, por favor.", translation: "I would like a coffee, please.", pronunciation: "kee-SYE-ra un ka-FE por fa-VOR" },
@@ -102,7 +95,6 @@ export const learningPaths = [
       { 
         slug: "asking-for-directions", 
         title: "Asking for Directions", 
-        completed: false, 
         introduction: "Navigate new places by learning to ask for and understand directions.",
         phrases: [
           { phrase: "¿Cómo llego a la estación?", translation: "How do I get to the station?", pronunciation: "KO-mo YE-go a la es-ta-SYON" },
@@ -116,7 +108,6 @@ export const learningPaths = [
       { 
         slug: "shopping-and-bargaining", 
         title: "Shopping and Bargaining", 
-        completed: false, 
         introduction: "Handle shopping situations and learn the art of polite bargaining.",
         phrases: [
           { phrase: "¿Cuánto cuesta esto?", translation: "How much is this?", pronunciation: "KWAN-to KWES-ta ES-to" },
@@ -130,7 +121,6 @@ export const learningPaths = [
       { 
         slug: "making-plans", 
         title: "Making Plans", 
-        completed: false, 
         introduction: "Learn to make plans and arrange meetings with friends.",
         phrases: [
           { phrase: "¿Qué haces este fin de semana?", translation: "What are you doing this weekend?", pronunciation: "ke A-ses ES-te fin de se-MA-na" },
@@ -146,12 +136,10 @@ export const learningPaths = [
   {
     title: "Advanced: Fluency Focus",
     description: "Dive into nuanced topics and perfect your accent.",
-    progress: 0,
     lessons: [
       { 
         slug: "discussing-hobbies-and-interests", 
         title: "Discussing Hobbies and Interests", 
-        completed: false, 
         introduction: "Talk about your hobbies and interests in detail.",
         phrases: [
           { phrase: "En mi tiempo libre, me gusta leer.", translation: "In my free time, I like to read.", pronunciation: "en mi TYEM-po LEE-bre me GOOS-ta le-ER" },
@@ -165,7 +153,6 @@ export const learningPaths = [
       { 
         slug: "expressing-opinions", 
         title: "Expressing Opinions", 
-        completed: false, 
         introduction: "Learn to express your opinions and engage in debates.",
         phrases: [
           { phrase: "En mi opinión, es una buena idea.", translation: "In my opinion, it's a good idea.", pronunciation: "en mi o-pi-NYON es OO-na BWE-na i-DE-a" },
@@ -179,7 +166,6 @@ export const learningPaths = [
       { 
         slug: "understanding-cultural-nuances", 
         title: "Understanding Cultural Nuances", 
-        completed: false, 
         introduction: "Explore cultural nuances to communicate more effectively.",
         phrases: [
           { phrase: "Es una costumbre local.", translation: "It's a local custom.", pronunciation: "es OO-na kos-TUM-bre lo-KAL" },
