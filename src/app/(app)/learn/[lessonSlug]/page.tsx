@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { speak } from "@/ai/flows/speak";
 import { allLessons } from "@/lib/lessons-data";
 import { useParams } from "next/navigation";
+import { useSettings } from "@/hooks/use-settings";
 
 
 function QuizItem({ question, options, answer }: typeof allLessons[0]['quiz'][0]) {
@@ -66,13 +67,14 @@ function QuizItem({ question, options, answer }: typeof allLessons[0]['quiz'][0]
 export default function LessonPage() {
   const params = useParams() as { lessonSlug: string };
   const { toast } = useToast();
+  const { learningLanguage } = useSettings();
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
 
-  const handleSpeak = async (text: string, languageCode: string = "es-ES") => {
+  const handleSpeak = async (text: string) => {
     if (isSpeaking === text) return;
     setIsSpeaking(text);
     try {
-      const { media } = await speak({ text, languageCode });
+      const { media } = await speak({ text, languageCode: learningLanguage.code });
       const audio = new Audio(media);
       audio.play();
       audio.onended = () => setIsSpeaking(null);
@@ -131,7 +133,7 @@ export default function LessonPage() {
                   <p className="text-sm text-primary font-medium">{item.pronunciation}</p>
                 </div>
                 <div className="flex gap-2 mt-2 sm:mt-0">
-                  <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase, "es-ES")} disabled={isSpeaking !== null}>
+                  <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase)} disabled={isSpeaking !== null}>
                     <Volume2 className={`w-5 h-5 ${isSpeaking === item.phrase ? 'animate-pulse' : ''}`} />
                     <span className="sr-only">Listen</span>
                   </Button>

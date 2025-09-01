@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useSettings } from "@/hooks/use-settings";
 
 import {
   generatePersonalizedExercises,
@@ -43,6 +44,7 @@ type ExercisesFormValues = z.infer<typeof ExercisesFormSchema>;
 const expectedPhrase = "Hola, ¿cómo estás?";
 
 export function PracticeClient() {
+  const { learningLanguage } = useSettings();
   const [generatedExercises, setGeneratedExercises] = useState<GeneratePersonalizedExercisesOutput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pronunciationFeedback, setPronunciationFeedback] = useState<ProvideSpeechRecognitionFeedbackOutput | null>(null);
@@ -60,7 +62,7 @@ export function PracticeClient() {
     setGeneratedExercises(null);
     const selectedTopics = topics.filter(topic => data.topics.includes(topic.id)).map(t => ({name: t.label, level: t.level as 'beginner' | 'intermediate' | 'advanced'}));
     const result = await generatePersonalizedExercises({
-      learningLanguage: "Spanish",
+      learningLanguage: learningLanguage.name,
       userLevel: "intermediate",
       exerciseTopics: selectedTopics
     });
@@ -116,7 +118,7 @@ export function PracticeClient() {
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">Custom Exercise Generator</CardTitle>
-            <CardDescription>Select topics to generate personalized exercises with AI.</CardDescription>
+            <CardDescription>Select topics to generate personalized exercises with AI for {learningLanguage.name}.</CardDescription>
           </CardHeader>
           <Form {...exercisesForm}>
             <form onSubmit={exercisesForm.handleSubmit(onGenerateExercises)}>

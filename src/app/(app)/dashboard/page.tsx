@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, BookMarked, Target, Zap } from 'lucide-react';
+import { ArrowUpRight, BookMarked, Target, Zap, Languages } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -15,6 +15,17 @@ import {
   XAxis,
   YAxis,
 } from "@/components/ui/chart";
+import { useSettings, supportedLanguages, type Language } from '@/hooks/use-settings';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+
 
 const chartData = [
   { day: 'Mon', xp: 50 },
@@ -33,13 +44,53 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+function LanguageSelector() {
+  const { learningLanguage, setLearningLanguage } = useSettings();
+
+  const handleLanguageChange = (code: string) => {
+    const language = supportedLanguages.find(l => l.code === code);
+    if (language) {
+      setLearningLanguage(language);
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="ml-auto gap-2">
+           {learningLanguage.flag}
+           <span className="hidden sm:inline">{learningLanguage.name}</span>
+           <Languages className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>Select a Language</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup value={learningLanguage.code} onValueChange={handleLanguageChange}>
+          {supportedLanguages.map(lang => (
+            <DropdownMenuRadioItem key={lang.code} value={lang.code}>
+              <span className="flex items-center gap-2">{lang.flag} {lang.name}</span>
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+
 export default function Dashboard() {
+  const { learningLanguage } = useSettings();
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="col-span-full flex justify-end">
+        <LanguageSelector />
+      </div>
+
       <Card className="xl:col-span-2">
         <CardHeader className="flex flex-row items-center">
           <div className="grid gap-2">
-            <CardTitle className="font-headline">Continue Learning</CardTitle>
+            <CardTitle className="font-headline">Continue Learning {learningLanguage.name}</CardTitle>
             <CardDescription>
               Your last lesson: <strong>Beginner - Common Greetings</strong>
             </CardDescription>
