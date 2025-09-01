@@ -19,7 +19,7 @@ import {
 import { useSettings, supportedLanguages, type Language } from '@/hooks/use-settings';
 import { useVocabulary } from '@/hooks/use-vocabulary';
 import { useLessonProgress } from '@/hooks/use-lesson-progress';
-import { allLessons } from '@/lib/lessons-data';
+import { allLessons, learningPaths } from '@/lib/lessons-data';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,6 +87,9 @@ function ContinueLearningCard() {
     const { learningLanguage } = useSettings();
 
     const nextLesson = allLessons.find(lesson => !isLessonCompleted(lesson.slug));
+    
+    const currentPath = nextLesson ? learningPaths.find(p => p.lessons.some(l => l.slug === nextLesson.slug)) : null;
+    const pathProgress = currentPath ? Math.round(currentPath.lessons.filter(l => isLessonCompleted(l.slug)).length / currentPath.lessons.length * 100) : 0;
 
     return (
         <Card className="xl:col-span-2">
@@ -112,12 +115,12 @@ function ContinueLearningCard() {
                     </Button>
                 )}
             </CardHeader>
-            {nextLesson && (
+            {nextLesson && currentPath && (
                 <CardContent>
                     <div className="space-y-2">
-                        <p className="text-sm font-medium">Lesson Progress (Demo)</p>
-                        <Progress value={45} aria-label="45% complete" />
-                        <p className="text-sm text-muted-foreground">You are 45% through this lesson.</p>
+                        <p className="text-sm font-medium">{currentPath.title} Progress</p>
+                        <Progress value={pathProgress} aria-label={`${pathProgress}% complete`} />
+                        <p className="text-sm text-muted-foreground">You are {pathProgress}% through this section.</p>
                     </div>
                 </CardContent>
             )}
@@ -153,7 +156,7 @@ function WordsMasteredCard() {
 
 
 export default function Dashboard() {
-  const dailyGoalPercentage = 75;
+  const dailyGoalPercentage = 75; // This would be calculated based on user activity
   
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">

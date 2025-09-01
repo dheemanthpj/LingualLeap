@@ -9,7 +9,7 @@ type LessonProgressState = {
 };
 
 // We are pre-populating some lessons as complete for demo purposes
-const initialCompletedLessons = ["common-greetings", "introducing-yourself"];
+const initialCompletedLessons: string[] = [];
 
 export const useLessonProgress = create<LessonProgressState>()(
   persist(
