@@ -20,6 +20,7 @@ import { useSettings, supportedLanguages, type Language } from '@/hooks/use-sett
 import { useVocabulary } from '@/hooks/use-vocabulary';
 import { useLessonProgress } from '@/hooks/use-lesson-progress';
 import { allLessons, learningPaths } from '@/lib/lessons-data';
+import { useProgress } from '@/hooks/use-progress';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,16 +31,6 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-
-const chartData = [
-  { day: 'Mon', xp: 50 },
-  { day: 'Tue', xp: 75 },
-  { day: 'Wed', xp: 120 },
-  { day: 'Thu', xp: 90 },
-  { day: 'Fri', xp: 150 },
-  { day: 'Sat', xp: 130 },
-  { day: 'Sun', xp: 180 },
-];
 
 const chartConfig = {
   xp: {
@@ -156,8 +147,13 @@ function WordsMasteredCard() {
 
 
 export default function Dashboard() {
-  const dailyGoalPercentage = 75; // This would be calculated based on user activity
+  const { activity } = useProgress();
   
+  const totalXpToday = activity.find(a => a.date === new Date().toISOString().split('T')[0])?.xp || 0;
+  const dailyGoal = 200;
+  const dailyGoalPercentage = Math.min(100, Math.round((totalXpToday / dailyGoal) * 100));
+
+
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
       <div className="col-span-full flex justify-end">
@@ -195,7 +191,7 @@ export default function Dashboard() {
                 <span className="text-center text-2xl font-bold text-foreground">{dailyGoalPercentage}%</span>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">150 / 200 XP</p>
+          <p className="text-sm text-muted-foreground">{totalXpToday} / {dailyGoal} XP</p>
         </CardContent>
       </Card>
 
@@ -213,13 +209,13 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[200px] w-full">
-            <BarChart accessibilityLayer data={chartData}>
+            <BarChart accessibilityLayer data={activity}>
               <XAxis
-                dataKey="day"
+                dataKey="date"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
                 stroke="hsl(var(--muted-foreground))"
               />
               <YAxis hide/>
