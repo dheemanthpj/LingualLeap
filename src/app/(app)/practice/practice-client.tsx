@@ -6,7 +6,6 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSettings } from "@/hooks/use-settings";
-import { allLessons } from "@/lib/lessons-data";
 
 import {
   generatePersonalizedExercises,
@@ -25,12 +24,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lightbulb, Mic, Check, Ear, Square, Settings, ChevronsUpDown } from "lucide-react";
+import { Lightbulb, Mic, Check, Square, ChevronsUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { ExerciseCard } from "./exercise-card";
 
 
 const topics = [
@@ -48,11 +48,7 @@ const ExercisesFormSchema = z.object({
 
 type ExercisesFormValues = z.infer<typeof ExercisesFormSchema>;
 
-
-// Flatten all phrases from all lessons
-const allPhrases = allLessons.flatMap(lesson => lesson.phrases.map(p => p.phrase));
-
-export function PracticeClient() {
+export function PracticeClient({ allPhrases }: { allPhrases: string[] }) {
   const { learningLanguage } = useSettings();
   const { toast } = useToast();
   const [generatedExercises, setGeneratedExercises] = useState<GeneratePersonalizedExercisesOutput | null>(null);
@@ -62,7 +58,7 @@ export function PracticeClient() {
   const [pronunciationFeedback, setPronunciationFeedback] = useState<ProvideSpeechRecognitionFeedbackOutput | null>(null);
   const [isGettingFeedback, setIsGettingFeedback] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [expectedPhrase, setExpectedPhrase] = useState(allPhrases[0]);
+  const [expectedPhrase, setExpectedPhrase] = useState(allPhrases[0] || "Select a phrase");
   const [spokenText, setSpokenText] = useState<string | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
   
@@ -226,27 +222,13 @@ export function PracticeClient() {
         </Card>
         <div className="mt-6 space-y-4">
           {isGenerating && (
-            <>
+            <div className="space-y-4">
               <Skeleton className="w-full h-40" />
               <Skeleton className="w-full h-40" />
-            </>
+            </div>
           )}
           {generatedExercises?.exercises.map((exercise, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Lightbulb className="w-5 h-5 text-accent"/> {exercise.exerciseType}</CardTitle>
-                <CardDescription>{exercise.instructions}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg font-semibold">{exercise.content}</p>
-              </CardContent>
-              {exercise.answer && (
-                <CardFooter className="flex flex-col items-start gap-2">
-                  <p className="text-sm font-bold text-muted-foreground">Answer:</p>
-                  <p className="text-green-600 font-medium">{exercise.answer}</p>
-                </CardFooter>
-              )}
-            </Card>
+            <ExerciseCard key={index} exercise={exercise} />
           ))}
         </div>
       </TabsContent>
@@ -266,6 +248,7 @@ export function PracticeClient() {
                       role="combobox"
                       aria-expanded={popoverOpen}
                       className="w-full justify-between"
+                      disabled={allPhrases.length === 0}
                     >
                       <span className="truncate">{expectedPhrase}</span>
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -302,7 +285,7 @@ export function PracticeClient() {
                 </Popover>
              </div>
             <div className="flex flex-col items-center justify-center gap-4">
-              <Button size="icon" className="size-20 rounded-full" onClick={handleToggleRecording} disabled={isGettingFeedback}>
+              <Button size="icon" className="size-20 rounded-full" onClick={handleToggleRecording} disabled={isGettingFeedback || allPhrases.length === 0}>
                 {isRecording ? <Square className="w-8 h-8 fill-current"/> : <Mic className="w-8 h-8"/>}
               </Button>
               <p className="text-sm text-muted-foreground">
