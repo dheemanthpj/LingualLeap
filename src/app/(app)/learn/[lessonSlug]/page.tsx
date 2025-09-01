@@ -68,7 +68,7 @@ export default function LessonPage() {
   const { toast } = useToast();
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
 
-  const handleSpeak = async (text: string, languageCode: string = "es") => {
+  const handleSpeak = async (text: string, languageCode: string = "es-ES") => {
     if (isSpeaking === text) return;
     setIsSpeaking(text);
     try {
@@ -131,7 +131,7 @@ export default function LessonPage() {
                   <p className="text-sm text-primary font-medium">{item.pronunciation}</p>
                 </div>
                 <div className="flex gap-2 mt-2 sm:mt-0">
-                  <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase)} disabled={isSpeaking !== null}>
+                  <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase, "es-ES")} disabled={isSpeaking !== null}>
                     <Volume2 className={`w-5 h-5 ${isSpeaking === item.phrase ? 'animate-pulse' : ''}`} />
                     <span className="sr-only">Listen</span>
                   </Button>

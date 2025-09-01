@@ -10,10 +10,11 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import wav from 'wav';
+import {googleAI} from '@genkit-ai/googleai';
 
 const SpeakInputSchema = z.object({
   text: z.string().describe('The text to be converted to speech.'),
-  languageCode: z.string().optional().describe('The language of the text (e.g., "en", "es"). Defaults to "en-US" if not provided.'),
+  languageCode: z.string().optional().describe('The language of the text (e.g., "en-US", "es-ES"). Defaults to "en-US" if not provided.'),
 });
 export type SpeakInput = z.infer<typeof SpeakInputSchema>;
 
@@ -53,7 +54,7 @@ const speakFlow = ai.defineFlow(
   },
   async ({ text, languageCode }) => {
     const { media } = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
+      model: googleAI.model('gemini-2.5-flash-preview-tts', {language: languageCode || 'en-US'}),
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
