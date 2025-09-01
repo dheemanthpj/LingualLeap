@@ -79,8 +79,13 @@ function ContinueLearningCard() {
 
     const nextLesson = allLessons.find(lesson => !isLessonCompleted(lesson.slug));
     
-    const currentPath = nextLesson ? learningPaths.find(p => p.lessons.some(l => l.slug === nextLesson.slug)) : null;
-    const pathProgress = currentPath ? Math.round(currentPath.lessons.filter(l => isLessonCompleted(l.slug)).length / currentPath.lessons.length * 100) : 0;
+    const currentPath = nextLesson ? learningPaths.find(p => p.lessons.some(l => l.slug === nextLesson.slug)) : learningPaths[learningPaths.length - 1];
+    
+    if (!currentPath) return null;
+
+    const completedInPath = currentPath.lessons.filter(l => isLessonCompleted(l.slug)).length;
+    const totalInPath = currentPath.lessons.length;
+    const pathProgress = totalInPath > 0 ? Math.round((completedInPath / totalInPath) * 100) : 0;
 
     return (
         <Card className="xl:col-span-2">
@@ -93,28 +98,26 @@ function ContinueLearningCard() {
                         </CardDescription>
                     ) : (
                         <CardDescription className="flex items-center gap-2 text-green-600">
-                           <CheckCircle2 className="w-5 h-5"/> All lessons completed!
+                           <CheckCircle2 className="w-5 h-5"/> All lessons completed! Congratulations!
                         </CardDescription>
                     )}
                 </div>
                 {nextLesson && (
                     <Button asChild size="sm" className="ml-auto gap-1">
                         <Link href={`/learn/${nextLesson.slug}`}>
-                            Resume
+                            Start Lesson
                             <ArrowUpRight className="h-4 w-4" />
                         </Link>
                     </Button>
                 )}
             </CardHeader>
-            {nextLesson && currentPath && (
-                <CardContent>
-                    <div className="space-y-2">
-                        <p className="text-sm font-medium">{currentPath.title} Progress</p>
-                        <Progress value={pathProgress} aria-label={`${pathProgress}% complete`} />
-                        <p className="text-sm text-muted-foreground">You are {pathProgress}% through this section.</p>
-                    </div>
-                </CardContent>
-            )}
+            <CardContent>
+                <div className="space-y-2">
+                    <p className="text-sm font-medium">{currentPath.title} Progress</p>
+                    <Progress value={pathProgress} aria-label={`${pathProgress}% complete`} />
+                    <p className="text-sm text-muted-foreground">You are {pathProgress}% through this section.</p>
+                </div>
+            </CardContent>
         </Card>
     )
 }
@@ -149,9 +152,21 @@ function WordsMasteredCard() {
 export default function Dashboard() {
   const { activity } = useProgress();
   
-  const totalXpToday = activity.find(a => a.date === new Date().toISOString().split('T')[0])?.xp || 0;
-  const dailyGoal = 200;
+  const today = new Date().toISOString().split('T')[0];
+  const totalXpToday = activity.find(a => a.date === today)?.xp || 0;
+  const dailyGoal = 50; // XP per lesson
   const dailyGoalPercentage = Math.min(100, Math.round((totalXpToday / dailyGoal) * 100));
+
+  const last7DaysActivity = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const date = d.toISOString().split('T')[0];
+    const dayData = activity.find(a => a.date === date);
+    return {
+      date,
+      xp: dayData?.xp || 0,
+    };
+  }).reverse();
 
 
   return (
@@ -168,7 +183,7 @@ export default function Dashboard() {
             <Target className="w-5 h-5 text-primary"/>
             Daily Goal
           </CardTitle>
-          <CardDescription>You're on a roll! Keep it up to maintain your streak.</CardDescription>
+          <CardDescription>Complete at least one lesson today to maintain your streak.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-2">
           <div className="relative size-32">
@@ -209,7 +224,7 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[200px] w-full">
-            <BarChart accessibilityLayer data={activity}>
+            <BarChart accessibilityLayer data={last7DaysActivity}>
               <XAxis
                 dataKey="date"
                 tickLine={false}
