@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { speak } from "@/ai/flows/speak";
 import { allLessons } from "@/lib/lessons-data";
+import { useParams } from "next/navigation";
 
 
 function QuizItem({ question, options, answer }: typeof allLessons[0]['quiz'][0]) {
@@ -62,7 +63,8 @@ function QuizItem({ question, options, answer }: typeof allLessons[0]['quiz'][0]
   )
 }
 
-export default function LessonPage({ params }: { params: { lessonSlug: string } }) {
+export default function LessonPage() {
+  const params = useParams() as { lessonSlug: string };
   const { toast } = useToast();
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
 
