@@ -141,6 +141,7 @@ function WordsMasteredCard() {
 
 export default function Dashboard() {
   const { activity } = useProgress();
+  const { dailyGoal } = useSettings();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -149,7 +150,6 @@ export default function Dashboard() {
   
   const today = new Date().toISOString().split('T')[0];
   const totalXpToday = activity.find(a => a.date === today)?.xp || 0;
-  const dailyGoal = 50; // XP per lesson
   const dailyGoalPercentage = Math.min(100, Math.round((totalXpToday / dailyGoal) * 100));
 
   const last7DaysActivity = Array.from({ length: 7 }, (_, i) => {

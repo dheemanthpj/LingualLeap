@@ -18,6 +18,8 @@ export const supportedLanguages: Language[] = [
 type SettingsState = {
   learningLanguage: Language;
   setLearningLanguage: (language: Language) => void;
+  dailyGoal: number;
+  setDailyGoal: (goal: number) => void;
 };
 
 export const useSettings = create<SettingsState>()(
@@ -25,6 +27,8 @@ export const useSettings = create<SettingsState>()(
     (set) => ({
       learningLanguage: supportedLanguages[0], // Default to Spanish
       setLearningLanguage: (language) => set({ learningLanguage: language }),
+      dailyGoal: 50,
+      setDailyGoal: (goal) => set({ dailyGoal: goal }),
     }),
     {
       name: 'settings-storage',

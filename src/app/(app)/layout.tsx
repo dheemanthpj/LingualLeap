@@ -9,6 +9,7 @@ import {
   Home,
   Layers3,
   Settings,
+  User,
 } from "lucide-react";
 
 import {
@@ -117,9 +118,9 @@ export default function AppLayout({
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Profile">
-                <Link href="#">
-                  <Avatar className="size-7">
+              <SidebarMenuButton asChild tooltip="Profile" isActive={isActive('/profile')}>
+                <Link href="/profile">
+                   <Avatar className="size-7">
                     <AvatarImage src="https://picsum.photos/100" data-ai-hint="person face" />
                     <AvatarFallback>U</AvatarFallback>
                   </Avatar>
