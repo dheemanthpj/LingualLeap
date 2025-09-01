@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -30,6 +31,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const chartConfig = {
@@ -76,7 +78,27 @@ function LanguageSelector() {
 function ContinueLearningCard() {
     const { isLessonCompleted } = useLessonProgress();
     const { learningLanguage } = useSettings();
+    const [isClient, setIsClient] = useState(false);
 
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (!isClient) {
+        return (
+            <Card className="xl:col-span-2">
+                <CardHeader>
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4 mt-2" />
+                </CardContent>
+            </Card>
+        );
+    }
+    
     const nextLesson = allLessons.find(lesson => !isLessonCompleted(lesson.slug));
     
     const currentPath = nextLesson ? learningPaths.find(p => p.lessons.some(l => l.slug === nextLesson.slug)) : learningPaths[learningPaths.length - 1];
@@ -124,6 +146,11 @@ function ContinueLearningCard() {
 
 function WordsMasteredCard() {
   const { vocabulary } = useVocabulary();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
       <Card>
@@ -134,10 +161,14 @@ function WordsMasteredCard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold">{vocabulary.length}</div>
-          <p className="text-xs text-muted-foreground">
-            Keep adding new words!
-          </p>
+            {isClient ? (
+              <div className="text-4xl font-bold">{vocabulary.length}</div>
+            ) : (
+              <Skeleton className="h-10 w-12" />
+            )}
+            <p className="text-xs text-muted-foreground">
+              Keep adding new words!
+            </p>
         </CardContent>
         <CardFooter>
           <Button asChild size="sm" variant="outline">
@@ -151,6 +182,11 @@ function WordsMasteredCard() {
 
 export default function Dashboard() {
   const { activity } = useProgress();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const today = new Date().toISOString().split('T')[0];
   const totalXpToday = activity.find(a => a.date === today)?.xp || 0;
@@ -186,27 +222,36 @@ export default function Dashboard() {
           <CardDescription>Complete at least one lesson today to maintain your streak.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-2">
-          <div className="relative size-32">
-             <svg className="size-full" width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-muted/20" strokeWidth="2"></circle>
-              <g className="origin-center -rotate-90 transform">
-                <circle 
-                  cx="18" 
-                  cy="18" 
-                  r="16" 
-                  fill="none" 
-                  className="stroke-current text-primary transition-all duration-500" 
-                  strokeWidth="2" 
-                  strokeDasharray="100" 
-                  strokeDashoffset={100 - dailyGoalPercentage}>
-                </circle>
-              </g>
-            </svg>
-            <div className="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
-                <span className="text-center text-2xl font-bold text-foreground">{dailyGoalPercentage}%</span>
+          {isClient ? (
+            <>
+            <div className="relative size-32">
+               <svg className="size-full" width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="18" r="16" fill="none" className="stroke-current text-muted/20" strokeWidth="2"></circle>
+                <g className="origin-center -rotate-90 transform">
+                  <circle 
+                    cx="18" 
+                    cy="18" 
+                    r="16" 
+                    fill="none" 
+                    className="stroke-current text-primary transition-all duration-500" 
+                    strokeWidth="2" 
+                    strokeDasharray="100" 
+                    strokeDashoffset={100 - dailyGoalPercentage}>
+                  </circle>
+                </g>
+              </svg>
+              <div className="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
+                  <span className="text-center text-2xl font-bold text-foreground">{dailyGoalPercentage}%</span>
+              </div>
             </div>
-          </div>
-          <p className="text-sm text-muted-foreground">{totalXpToday} / {dailyGoal} XP</p>
+            <p className="text-sm text-muted-foreground">{totalXpToday} / {dailyGoal} XP</p>
+            </>
+          ) : (
+             <div className="flex flex-col items-center justify-center gap-2 h-[152px]">
+                <Skeleton className="size-32 rounded-full" />
+                <Skeleton className="h-4 w-16" />
+             </div>
+          )}
         </CardContent>
       </Card>
 
@@ -223,24 +268,28 @@ export default function Dashboard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[200px] w-full">
-            <BarChart accessibilityLayer data={last7DaysActivity}>
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
-                stroke="hsl(var(--muted-foreground))"
-              />
-              <YAxis hide/>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Bar dataKey="xp" fill="var(--color-xp)" radius={8} />
-            </BarChart>
-          </ChartContainer>
+          {isClient ? (
+              <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                <BarChart accessibilityLayer data={last7DaysActivity}>
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis hide/>
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Bar dataKey="xp" fill="var(--color-xp)" radius={8} />
+                </BarChart>
+              </ChartContainer>
+          ) : (
+             <Skeleton className="h-[200px] w-full" />
+          )}
         </CardContent>
       </Card>
     </div>
