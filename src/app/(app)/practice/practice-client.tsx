@@ -98,7 +98,7 @@ export function PracticeClient() {
           // Simulate speech recognition result and get feedback
           // In a real app, this would come from a speech-to-text API.
           // We'll use a slightly incorrect phrase to demonstrate feedback.
-          handleGetFeedback("Hola, como estas?");
+          setTimeout(() => handleGetFeedback("Hola, como estas?"), 0);
           return 100;
         }
         return prev + 10;
