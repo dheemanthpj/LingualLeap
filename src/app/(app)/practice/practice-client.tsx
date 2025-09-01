@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,11 +20,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lightbulb, Mic, Check, Ear } from "lucide-react";
+import { Lightbulb, Mic, Check, Ear, Square } from "lucide-react";
 
 const topics = [
   { id: "greetings", label: "Greetings", level: "beginner" },
@@ -40,25 +40,19 @@ const ExercisesFormSchema = z.object({
 
 type ExercisesFormValues = z.infer<typeof ExercisesFormSchema>;
 
-const FeedbackFormSchema = z.object({
-  spokenText: z.string().min(1, "Please enter the text you 'spoke'."),
-});
-
-type FeedbackFormValues = z.infer<typeof FeedbackFormSchema>;
+const expectedPhrase = "Hola, ¿cómo estás?";
 
 export function PracticeClient() {
   const [generatedExercises, setGeneratedExercises] = useState<GeneratePersonalizedExercisesOutput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [pronunciationFeedback, setPronunciationFeedback] = useState<ProvideSpeechRecognitionFeedbackOutput | null>(null);
   const [isGettingFeedback, setIsGettingFeedback] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingProgress, setRecordingProgress] = useState(0);
 
   const exercisesForm = useForm<ExercisesFormValues>({
     resolver: zodResolver(ExercisesFormSchema),
     defaultValues: { topics: ["greetings"] },
-  });
-
-  const feedbackForm = useForm<FeedbackFormValues>({
-    resolver: zodResolver(FeedbackFormSchema),
   });
 
   const onGenerateExercises: SubmitHandler<ExercisesFormValues> = async (data) => {
@@ -74,23 +68,49 @@ export function PracticeClient() {
     setIsGenerating(false);
   };
   
-  const expectedPhrase = "Hola, ¿cómo estás?";
-  const onGetFeedback: SubmitHandler<FeedbackFormValues> = async (data) => {
+  const handleGetFeedback = async (spokenText: string) => {
     setIsGettingFeedback(true);
     setPronunciationFeedback(null);
     const result = await provideSpeechRecognitionFeedback({
-      spokenText: data.spokenText,
+      spokenText: spokenText,
       expectedText: expectedPhrase,
     });
     setPronunciationFeedback(result);
     setIsGettingFeedback(false);
   };
+  
+  const handleRecording = () => {
+    setIsRecording(true);
+    setPronunciationFeedback(null);
+  }
+
+  useEffect(() => {
+    if (!isRecording) return;
+    
+    setRecordingProgress(0);
+    const interval = setInterval(() => {
+      setRecordingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setIsRecording(false);
+          // Simulate speech recognition result and get feedback
+          // In a real app, this would come from a speech-to-text API.
+          // We'll use a slightly incorrect phrase to demonstrate feedback.
+          handleGetFeedback("Hola, como estas?");
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [isRecording]);
 
   return (
-    <Tabs defaultValue="exercises" className="w-full">
+    <Tabs defaultValue="pronunciation" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="exercises">Generated Exercises</TabsTrigger>
-        <TabsTrigger value="pronunciation">Pronunciation Practice</TabsTrigger>
+        <TabsTrigger value="exercises">Custom Exercises</TabsTrigger>
+        <TabsTrigger value="pronunciation">Pronunciation</TabsTrigger>
       </TabsList>
       <TabsContent value="exercises">
         <Card>
@@ -192,42 +212,32 @@ export function PracticeClient() {
             <CardTitle className="font-headline">Pronunciation Practice</CardTitle>
             <CardDescription>Listen to the phrase and record yourself. Our AI will give you feedback.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
              <Alert>
               <Ear className="h-4 w-4" />
               <AlertTitle>Phrase to practice:</AlertTitle>
-              <AlertDescription className="text-lg font-bold text-foreground">
+              <AlertDescription className="text-xl font-bold text-foreground">
                 {expectedPhrase}
               </AlertDescription>
             </Alert>
-            <Form {...feedbackForm}>
-              <form onSubmit={feedbackForm.handleSubmit(onGetFeedback)} className="space-y-4">
-                <FormField
-                  control={feedbackForm.control}
-                  name="spokenText"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your attempt (type what you would say):</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Textarea placeholder="e.g., 'Hola, como estas?'" {...field} />
-                          <Button size="icon" variant="outline" type="button" className="absolute bottom-2 right-2">
-                            <Mic className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormDescription>
-                        Since we can't use a real microphone here, type your pronunciation.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <Button type="submit" disabled={isGettingFeedback}>
-                  {isGettingFeedback ? "Getting Feedback..." : "Get Feedback"}
-                </Button>
-              </form>
-            </Form>
+            <div className="flex flex-col items-center justify-center gap-4">
+              {isRecording ? (
+                <>
+                  <Button size="icon" variant="destructive" className="size-20 rounded-full" onClick={() => setIsRecording(false)}>
+                    <Square className="w-8 h-8"/>
+                  </Button>
+                  <p className="text-sm text-muted-foreground">Recording...</p>
+                  <Progress value={recordingProgress} className="w-1/2" />
+                </>
+              ) : (
+                <>
+                  <Button size="icon" className="size-20 rounded-full" onClick={handleRecording} disabled={isGettingFeedback}>
+                    <Mic className="w-8 h-8"/>
+                  </Button>
+                  <p className="text-sm text-muted-foreground">Click the button to start recording</p>
+                </>
+              )}
+            </div>
           </CardContent>
         </Card>
         <div className="mt-6">
