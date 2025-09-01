@@ -1,20 +1,25 @@
 
+'use client'
+
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
+  const { user } = useAuth();
+
   return (
     <div className="max-w-2xl mx-auto space-y-8">
        <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
             <Avatar className="size-20">
-              <AvatarImage src="https://picsum.photos/200" data-ai-hint="person face" />
-              <AvatarFallback>U</AvatarFallback>
+              <AvatarImage src={user?.photoURL || `https://avatar.vercel.sh/${user?.email}.png`} data-ai-hint="person face" />
+              <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="font-headline text-3xl">User Name</CardTitle>
-              <CardDescription>Member since 2024</CardDescription>
+              <CardTitle className="font-headline text-3xl">{user?.displayName || 'User Name'}</CardTitle>
+              <CardDescription>Email: {user?.email}</CardDescription>
             </div>
           </div>
         </CardHeader>

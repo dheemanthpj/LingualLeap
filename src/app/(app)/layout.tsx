@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -8,9 +9,12 @@ import {
   ClipboardPen,
   Home,
   Layers3,
+  LogOut,
   Settings,
-  User,
 } from "lucide-react";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 import {
   SidebarProvider,
@@ -26,14 +30,26 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
+import { useAuth, AuthProvider } from "@/hooks/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user } = useAuth();
   const isActive = (path: string) => pathname.startsWith(path);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push("/login");
+  };
 
   return (
     <SidebarProvider>
@@ -118,15 +134,30 @@ export default function AppLayout({
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Profile" isActive={isActive('/profile')}>
-                <Link href="/profile">
-                   <Avatar className="size-7">
-                    <AvatarImage src="https://picsum.photos/100" data-ai-hint="person face" />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">User Name</span>
-                </Link>
-              </SidebarMenuButton>
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                     <SidebarMenuButton asChild tooltip="Profile" isActive={isActive('/profile')}>
+                        <div>
+                          <Avatar className="size-7">
+                            <AvatarImage src={user?.photoURL || `https://avatar.vercel.sh/${user?.email}.png`} data-ai-hint="person face" />
+                            <AvatarFallback>{user?.email?.[0].toUpperCase() || 'U'}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{user?.displayName || user?.email || 'User Name'}</span>
+                        </div>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="right" align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                       <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
@@ -144,4 +175,17 @@ export default function AppLayout({
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+    return (
+        <AuthProvider>
+            <AppLayoutContent>{children}</AppLayoutContent>
+        </AuthProvider>
+    )
 }
