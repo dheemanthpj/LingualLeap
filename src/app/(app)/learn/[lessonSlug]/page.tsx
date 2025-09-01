@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, ChevronLeft, ChevronRight, Mic, Volume2, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Mic, Volume2, X, PartyPopper } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { speak } from "@/ai/flows/speak";
@@ -12,6 +12,7 @@ import { allLessons } from "@/lib/lessons-data";
 import { useParams } from "next/navigation";
 import { useSettings } from "@/hooks/use-settings";
 import { useLessonProgress } from "@/hooks/use-lesson-progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 function QuizItem({ question, options, answer, onCorrect }: (typeof allLessons[0]['quiz'][0] & { onCorrect: () => void })) {
@@ -73,21 +74,22 @@ export default function LessonPage() {
   const params = useParams() as { lessonSlug: string };
   const { toast } = useToast();
   const { learningLanguage } = useSettings();
-  const { completeLesson } = useLessonProgress();
+  const { completeLesson, isLessonCompleted } = useLessonProgress();
   const [isSpeaking, setIsSpeaking] = useState<string | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
   const lessonDetails = allLessons.find(l => l.slug === params.lessonSlug);
+  const isCompleted = isLessonCompleted(params.lessonSlug);
 
   useEffect(() => {
-    if (lessonDetails && correctAnswers === lessonDetails.quiz.length) {
+    if (lessonDetails && !isCompleted && correctAnswers === lessonDetails.quiz.length && lessonDetails.quiz.length > 0) {
         completeLesson(params.lessonSlug);
         toast({
             title: "Lesson Complete!",
             description: `You've mastered "${lessonDetails.title}".`,
         });
     }
-  }, [correctAnswers, lessonDetails, params.lessonSlug, completeLesson, toast]);
+  }, [correctAnswers, lessonDetails, params.lessonSlug, completeLesson, toast, isCompleted]);
   
   const handleCorrectAnswer = () => {
     setCorrectAnswers(prev => prev + 1);
@@ -123,6 +125,8 @@ export default function LessonPage() {
   }
   
   const { title, introduction, phrases, quiz } = lessonDetails;
+  
+  const allQuizQuestionsAnswered = correctAnswers === quiz.length && quiz.length > 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -131,6 +135,16 @@ export default function LessonPage() {
           <Link href="/learn"><ChevronLeft className="w-4 h-4 mr-2" /> Back to Lessons</Link>
         </Button>
       </div>
+
+      {isCompleted && (
+        <Alert className="bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200">
+          <PartyPopper className="h-5 w-5 text-green-500" />
+          <AlertTitle className="font-bold">Lesson Complete!</AlertTitle>
+          <AlertDescription>
+            You have successfully completed this lesson. Feel free to review the content or move on to the next one.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Card>
         <CardHeader>
@@ -193,7 +207,7 @@ export default function LessonPage() {
             Previous Lesson
           </Link>
         </Button>
-        <Button asChild disabled={!nextLesson}>
+        <Button asChild disabled={!nextLesson || (!isCompleted && !allQuizQuestionsAnswered)}>
           <Link href={nextLesson ? `/learn/${nextLesson.slug}`: '#'}>
             Next Lesson
             <ChevronRight className="w-4 h-4 ml-2"/>
