@@ -7,41 +7,7 @@ import {
 } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle, ArrowRight } from "lucide-react";
-
-const learningPaths = [
-  {
-    title: "Beginner: The Essentials",
-    description: "Start your journey by mastering the basics of the language.",
-    progress: 35,
-    lessons: [
-      { slug: "common-greetings", title: "Common Greetings", completed: true },
-      { slug: "introducing-yourself", title: "Introducing Yourself", completed: true },
-      { slug: "basic-questions-answers", title: "Basic Questions & Answers", completed: false },
-      { slug: "numbers-and-counting", title: "Numbers and Counting", completed: false },
-    ],
-  },
-  {
-    title: "Intermediate: Building Confidence",
-    description: "Expand your vocabulary and start forming complex sentences.",
-    progress: 0,
-    lessons: [
-      { slug: "ordering-food-and-drinks", title: "Ordering Food and Drinks", completed: false },
-      { slug: "asking-for-directions", title: "Asking for Directions", completed: false },
-      { slug: "shopping-and-bargaining", title: "Shopping and Bargaining", completed: false },
-      { slug: "making-plans", title: "Making Plans", completed: false },
-    ],
-  },
-  {
-    title: "Advanced: Fluency Focus",
-    description: "Dive into nuanced topics and perfect your accent.",
-    progress: 0,
-    lessons: [
-      { slug: "discussing-hobbies-and-interests", title: "Discussing Hobbies and Interests", completed: false },
-      { slug: "expressing-opinions", title: "Expressing Opinions", completed: false },
-      { slug: "understanding-cultural-nuances", title: "Understanding Cultural Nuances", completed: false },
-    ],
-  },
-];
+import { learningPaths } from "@/lib/lessons-data";
 
 export default function LearnPage() {
   return (

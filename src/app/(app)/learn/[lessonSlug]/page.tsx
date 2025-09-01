@@ -8,33 +8,10 @@ import { Check, ChevronLeft, ChevronRight, Mic, Volume2, X } from "lucide-react"
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { speak } from "@/ai/flows/speak";
+import { allLessons } from "@/lib/lessons-data";
 
 
-// This is mock data. In a real application, you'd fetch this based on the lessonSlug.
-const lessonDetails = {
-  title: "Common Greetings",
-  introduction: "Let's learn some essential greetings you can use in everyday conversations. These are fundamental for starting any interaction.",
-  phrases: [
-    { phrase: "Hola", translation: "Hello", pronunciation: "OH-lah" },
-    { phrase: "Buenos días", translation: "Good morning", pronunciation: "BWEH-nohs DEE-ahs" },
-    { phrase: "¿Cómo estás?", translation: "How are you?", pronunciation: "KOH-moh es-TAHS" },
-    { phrase: "Adiós", translation: "Goodbye", pronunciation: "ah-DYOHS" },
-  ],
-  quiz: [
-    {
-      question: "How do you say 'Hello'?",
-      options: ["Adiós", "Hola", "Gracias"],
-      answer: "Hola"
-    },
-     {
-      question: "What does 'Buenos días' mean?",
-      options: ["Good evening", "Good afternoon", "Good morning"],
-      answer: "Good morning"
-    }
-  ]
-};
-
-function QuizItem({ question, options, answer }: typeof lessonDetails.quiz[0]) {
+function QuizItem({ question, options, answer }: typeof allLessons[0]['quiz'][0]) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
 
@@ -108,7 +85,17 @@ export default function LessonPage({ params }: { params: { lessonSlug: string } 
     }
   };
   
-  // You can use params.lessonSlug to fetch the correct lesson data
+  const lessonDetails = allLessons.find(l => l.slug === params.lessonSlug);
+  const currentLessonIndex = allLessons.findIndex(l => l.slug === params.lessonSlug);
+  
+  const previousLesson = currentLessonIndex > 0 ? allLessons[currentLessonIndex - 1] : null;
+  const nextLesson = currentLessonIndex < allLessons.length - 1 ? allLessons[currentLessonIndex + 1] : null;
+
+
+  if (!lessonDetails) {
+    return <div className="text-center">Lesson not found.</div>;
+  }
+  
   const { title, introduction, phrases, quiz } = lessonDetails;
 
   return (
@@ -127,59 +114,67 @@ export default function LessonPage({ params }: { params: { lessonSlug: string } 
           <p className="text-muted-foreground text-lg">{introduction}</p>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Key Phrases</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {phrases.map((item, index) => (
-            <div key={index} className="flex flex-wrap items-center justify-between p-4 rounded-md bg-muted/50">
-              <div>
-                <p className="text-xl font-bold">{item.phrase}</p>
-                <p className="text-muted-foreground">{item.translation}</p>
-                <p className="text-sm text-primary font-medium">{item.pronunciation}</p>
+      
+      {phrases && phrases.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Key Phrases</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {phrases.map((item, index) => (
+              <div key={index} className="flex flex-wrap items-center justify-between p-4 rounded-md bg-muted/50">
+                <div>
+                  <p className="text-xl font-bold">{item.phrase}</p>
+                  <p className="text-muted-foreground">{item.translation}</p>
+                  <p className="text-sm text-primary font-medium">{item.pronunciation}</p>
+                </div>
+                <div className="flex gap-2 mt-2 sm:mt-0">
+                  <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase)} disabled={isSpeaking !== null}>
+                    <Volume2 className={`w-5 h-5 ${isSpeaking === item.phrase ? 'animate-pulse' : ''}`} />
+                    <span className="sr-only">Listen</span>
+                  </Button>
+                   <Button variant="outline" size="icon" asChild>
+                     <Link href="/practice">
+                        <Mic className="w-5 h-5" />
+                        <span className="sr-only">Practice Pronunciation</span>
+                     </Link>
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2 mt-2 sm:mt-0">
-                <Button variant="outline" size="icon" onClick={() => handleSpeak(item.phrase)} disabled={isSpeaking !== null}>
-                  <Volume2 className={`w-5 h-5 ${isSpeaking === item.phrase ? 'animate-pulse' : ''}`} />
-                  <span className="sr-only">Listen</span>
-                </Button>
-                 <Button variant="outline" size="icon" asChild>
-                   <Link href="/practice">
-                      <Mic className="w-5 h-5" />
-                      <span className="sr-only">Practice Pronunciation</span>
-                   </Link>
-                </Button>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Quiz</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {quiz.map((q, index) => (
-            <QuizItem key={index} {...q} />
-          ))}
-        </CardContent>
-      </Card>
+
+      {quiz && quiz.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Quiz</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {quiz.map((q, index) => (
+              <QuizItem key={index} {...q} />
+            ))}
+          </CardContent>
+        </Card>
+      )}
       
       <div className="flex justify-between items-center mt-8">
-        <Button variant="outline">
-          <ChevronLeft className="w-4 h-4 mr-2"/>
-          Previous Lesson
+        <Button variant="outline" asChild disabled={!previousLesson}>
+          <Link href={previousLesson ? `/learn/${previousLesson.slug}`: '#'}>
+            <ChevronLeft className="w-4 h-4 mr-2"/>
+            Previous Lesson
+          </Link>
         </Button>
-        <Button>
-          Next Lesson
-          <ChevronRight className="w-4 h-4 ml-2"/>
+        <Button asChild disabled={!nextLesson}>
+          <Link href={nextLesson ? `/learn/${nextLesson.slug}`: '#'}>
+            Next Lesson
+            <ChevronRight className="w-4 h-4 ml-2"/>
+          </Link>
         </Button>
       </div>
 
     </div>
   );
 }
-
