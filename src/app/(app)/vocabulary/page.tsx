@@ -2,6 +2,9 @@
 
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
+import { useVocabulary } from "@/hooks/use-vocabulary"
+import { PlusCircle } from "lucide-react"
 
 import {
   Carousel,
@@ -11,17 +14,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
-const vocabulary = [
-  { word: "Hola", translation: "Hello", image: "https://picsum.photos/400/200?random=1", dataAiHint: "greeting wave" },
-  { word: "Gracias", translation: "Thank you", image: "https://picsum.photos/400/200?random=2", dataAiHint: "gratitude hands" },
-  { word: "Adiós", translation: "Goodbye", image: "https://picsum.photos/400/200?random=3", dataAiHint: "waving goodbye" },
-  { word: "Por favor", translation: "Please", image: "https://picsum.photos/400/200?random=4", dataAiHint: "polite gesture" },
-  { word: "Sí", translation: "Yes", image: "https://picsum.photos/400/200?random=5", dataAiHint: "thumbs up" },
-  { word: "No", translation: "No", image: "https://picsum.photos/400/200?random=6", dataAiHint: "shaking head" },
-]
-
-function Flashcard({ word, translation, image, dataAiHint }: typeof vocabulary[0]) {
+function Flashcard({ word, translation, image, dataAiHint }: {word: string, translation: string, image: string, dataAiHint: string}) {
   const [isFlipped, setIsFlipped] = React.useState(false)
 
   React.useEffect(() => {
@@ -64,21 +59,44 @@ function Flashcard({ word, translation, image, dataAiHint }: typeof vocabulary[0
 }
 
 export default function VocabularyPage() {
+  const { vocabulary } = useVocabulary();
+
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8">
-      <Carousel className="w-full">
-        <CarouselContent>
-          {vocabulary.map((item, index) => (
-            <CarouselItem key={index}>
-              <div className="p-1 h-[25rem]">
-                <Flashcard {...item} />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
+      <div className="w-full flex justify-between items-center">
+        <h1 className="text-2xl font-bold font-headline">My Vocabulary</h1>
+        <Button asChild>
+          <Link href="/vocabulary/add">
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Word
+          </Link>
+        </Button>
+      </div>
+
+      {vocabulary.length > 0 ? (
+        <Carousel className="w-full">
+          <CarouselContent>
+            {vocabulary.map((item, index) => (
+              <CarouselItem key={index}>
+                <div className="p-1 h-[25rem]">
+                  <Flashcard {...item} />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      ) : (
+        <Card className="w-full h-[25rem] flex flex-col justify-center items-center text-center bg-muted/50 border-dashed">
+            <CardContent className="p-6">
+                <h3 className="text-xl font-semibold">Your vocabulary list is empty.</h3>
+                <p className="text-muted-foreground mt-2">
+                    Click &quot;Add New Word&quot; to start building your personal flashcard deck.
+                </p>
+            </CardContent>
+        </Card>
+      )}
+
       <div className="text-center">
         <p className="text-muted-foreground">Click card to flip. Use arrows to navigate.</p>
       </div>
