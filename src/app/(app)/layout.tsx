@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
 
 export default function AppLayout({
   children,
@@ -110,8 +109,8 @@ export default function AppLayout({
         <SidebarFooter>
           <SidebarMenu>
              <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Settings">
-                <Link href="#">
+              <SidebarMenuButton asChild isActive={isActive("/settings")} tooltip="Settings">
+                <Link href="/settings">
                   <Settings />
                   <span>Settings</span>
                 </Link>

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ArrowUpRight, BookMarked, Target, Zap, Languages, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, BookMarked, Target, Zap, CheckCircle2 } from 'lucide-react';
 import {
   ChartContainer,
   ChartTooltip,
@@ -17,21 +17,13 @@ import {
   XAxis,
   YAxis,
 } from "@/components/ui/chart";
-import { useSettings, supportedLanguages, type Language } from '@/hooks/use-settings';
+import { useSettings, type Language } from '@/hooks/use-settings';
 import { useVocabulary } from '@/hooks/use-vocabulary';
 import { useLessonProgress } from '@/hooks/use-lesson-progress';
 import { allLessons, learningPaths } from '@/lib/lessons-data';
 import { useProgress } from '@/hooks/use-progress';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LanguageSelector } from '@/components/language-selector';
 
 
 const chartConfig = {
@@ -41,39 +33,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-function LanguageSelector() {
-  const { learningLanguage, setLearningLanguage } = useSettings();
-
-  const handleLanguageChange = (code: string) => {
-    const language = supportedLanguages.find(l => l.code === code);
-    if (language) {
-      setLearningLanguage(language);
-    }
-  }
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="ml-auto gap-2">
-           {learningLanguage.flag}
-           <span className="hidden sm:inline">{learningLanguage.name}</span>
-           <Languages className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuLabel>Select a Language</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup value={learningLanguage.code} onValueChange={handleLanguageChange}>
-          {supportedLanguages.map(lang => (
-            <DropdownMenuRadioItem key={lang.code} value={lang.code}>
-              <span className="flex items-center gap-2">{lang.flag} {lang.name}</span>
-            </DropdownMenuRadioItem>
-          ))}
-        </DropdownMenuRadioGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 function ContinueLearningCard() {
     const { isLessonCompleted } = useLessonProgress();
