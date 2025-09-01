@@ -1,4 +1,6 @@
 
+"use client";
+
 import { useState, useEffect, useContext, createContext, type ReactNode } from 'react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
@@ -31,10 +33,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (loading) return;
 
     const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
+    const isHomePage = pathname === '/';
 
-    if (!user && !isAuthPage) {
+    if (!user && !isAuthPage && !isHomePage) {
       router.push('/login');
-    } else if (user && isAuthPage) {
+    } else if (user && (isAuthPage || isHomePage)) {
       router.push('/dashboard');
     }
   }, [user, loading, pathname, router]);
@@ -42,13 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   if (loading) {
     return (
         <div className="flex items-center justify-center h-screen">
-            <Skeleton className="w-32 h-32" />
+            <div className="w-32 h-32 animate-pulse bg-muted rounded-md"></div>
         </div>
     )
   }
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup');
-  if (user || isAuthPage) {
+  if (user || isAuthPage || pathname === '/') {
     return (
         <AuthContext.Provider value={{ user, loading }}>
         {children}
