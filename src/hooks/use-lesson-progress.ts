@@ -8,7 +8,7 @@ type LessonProgressState = {
   isLessonCompleted: (slug:string) => boolean;
 };
 
-// We are pre-populating some lessons as complete for demo purposes
+// We start with no lessons completed
 const initialCompletedLessons: string[] = [];
 
 export const useLessonProgress = create<LessonProgressState>()(

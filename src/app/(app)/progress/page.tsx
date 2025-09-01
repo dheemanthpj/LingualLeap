@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,29 +18,8 @@ import {
   Radar,
   RadarChart
 } from "@/components/ui/chart"
-import { Award, Star, TrendingUp } from "lucide-react";
-
-const activityData = [
-  { date: "2024-05-01", xp: 120 }, { date: "2024-05-02", xp: 140 },
-  { date: "2024-05-03", xp: 200 }, { date: "2024-05-04", xp: 180 },
-  { date: "2024-05-05", xp: 250 }, { date: "2024-05-06", xp: 230 },
-  { date: "2024-05-07", xp: 300 },
-]
-
-const skillsData = [
-  { skill: "Vocabulary", proficiency: 85 },
-  { skill: "Grammar", proficiency: 70 },
-  { skill: "Listening", proficiency: 90 },
-  { skill: "Speaking", proficiency: 60 },
-  { skill: "Reading", proficiency: 75 },
-]
-
-const achievements = [
-  { icon: Award, title: "Streak Master", description: "7-day streak" },
-  { icon: Star, title: "Word Wizard", description: "Learned 100 words" },
-  { icon: TrendingUp, title: "Quick Learner", description: "Completed 5 lessons" },
-  { icon: Award, title: "Perfect Pronunciation", description: "Scored 95%+" },
-]
+import { useProgress } from "@/hooks/use-progress";
+import { cn } from "@/lib/utils";
 
 const chartConfig = {
   xp: { label: "XP", color: "hsl(var(--primary))" },
@@ -47,6 +27,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function ProgressPage() {
+  const { activity, skills, achievements } = useProgress();
+
   return (
     <div className="grid gap-6 md:gap-8">
       <Card>
@@ -58,7 +40,7 @@ export default function ProgressPage() {
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
             <LineChart
               accessibilityLayer
-              data={activityData}
+              data={activity}
               margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
             >
               <CartesianGrid vertical={false} />
@@ -91,7 +73,7 @@ export default function ProgressPage() {
           </CardHeader>
           <CardContent>
              <ChartContainer config={chartConfig} className="h-[250px] w-full">
-               <RadarChart data={skillsData}>
+               <RadarChart data={skills}>
                 <CartesianGrid gridType="circle"/>
                 <PolarAngleAxis dataKey="skill" stroke="hsl(var(--muted-foreground))" />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
@@ -107,13 +89,19 @@ export default function ProgressPage() {
             <CardTitle className="font-headline">Achievements</CardTitle>
             <CardDescription>Badges you've earned on your learning journey.</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {achievements.map((ach, index) => (
-              <div key={index} className="flex flex-col items-center text-center p-4 bg-muted/50 rounded-lg">
-                <div className="p-3 bg-accent/20 rounded-full">
-                   <ach.icon className="w-8 h-8 text-accent" />
+              <div key={index} className={cn(
+                  "flex flex-col items-center text-center p-4 bg-muted/50 rounded-lg transition-opacity",
+                  !ach.unlocked && "opacity-40"
+                )}>
+                <div className={cn(
+                  "p-3 rounded-full transition-colors",
+                  ach.unlocked ? "bg-accent/20" : "bg-muted"
+                )}>
+                   <ach.icon className={cn("w-8 h-8", ach.unlocked ? "text-accent" : "text-muted-foreground")} />
                 </div>
-                <p className="font-semibold mt-2">{ach.title}</p>
+                <p className="font-semibold mt-2 text-sm">{ach.title}</p>
                 <p className="text-xs text-muted-foreground">{ach.description}</p>
               </div>
             ))}
